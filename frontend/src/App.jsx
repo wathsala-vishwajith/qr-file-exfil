@@ -1,35 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.css";
+import { QRCodeSVG } from "qrcode.react";
+import axios from "axios";
+import {
+  Card,
+  CardBody,
+  Center,
+  Heading,
+  TabList,
+  Tabs,
+  Tab,
+  VStack,
+  TabPanels,
+  TabPanel,
+  Input,
+  TabIndicator,
+  Button,
+  flexbox,
+} from "@chakra-ui/react";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <VStack h="full" w="full" p={10} alignItems="flex-start">
+      <Center flexDirection={"column"}>
+        <Center flexDirection={"column"}>
+          <QRCodeSVG
+            value={"qr-file-exfil"}
+            size={128}
+            bgColor={"#ffffff"}
+            fgColor={"#000000"}
+            level={"L"}
+            includeMargin={false}
+          />
+          <Heading color={"lightskyblue"}>qr-file-exfil</Heading>
+        </Center>
+        <Card minW={120}>
+          <CardBody>
+            <Tabs minW={100} isFitted variant={"enclosed"}>
+              <TabList>
+                <Tab>Encode</Tab>
+                <Tab>Decode</Tab>
+              </TabList>
+              <TabIndicator
+                mt="-1.5px"
+                height="2px"
+                bg="blue.500"
+                borderRadius="1px"
+              />
+              <TabPanels>
+                <TabPanel p={10}>
+                  <Center>
+                    <Input
+                      type="file"
+                      accept="audio/*,image/*,video/*,.pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain,"
+                    />
+                    <Button>Encode</Button>
+                  </Center>
+                </TabPanel>
+                <TabPanel>
+                  <p>Decode</p>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </CardBody>
+        </Card>
+      </Center>
+    </VStack>
+  );
 }
 
-export default App
+export default App;
+
