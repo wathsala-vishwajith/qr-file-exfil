@@ -15,14 +15,17 @@ import {
   Input,
   TabIndicator,
   Button,
-  flexbox,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
 } from "@chakra-ui/react";
+import { Field, Formik, Form } from "Formik";
 
 function App() {
   return (
-    <VStack h="full" w="full" p={10} alignItems="flex-start">
+    <VStack h="full" w="full" minH={"100vh"} p={10} alignItems="center">
       <Center flexDirection={"column"}>
-        <Center flexDirection={"column"}>
+        <Center p={10} flexDirection={"column"}>
           <QRCodeSVG
             value={"qr-file-exfil"}
             size={128}
@@ -33,9 +36,9 @@ function App() {
           />
           <Heading color={"lightskyblue"}>qr-file-exfil</Heading>
         </Center>
-        <Card minW={120}>
+        <Card>
           <CardBody>
-            <Tabs minW={100} isFitted variant={"enclosed"}>
+            <Tabs minW={345} minH={300} isFitted variant={"enclosed"}>
               <TabList>
                 <Tab>Encode</Tab>
                 <Tab>Decode</Tab>
@@ -49,11 +52,50 @@ function App() {
               <TabPanels>
                 <TabPanel p={10}>
                   <Center>
-                    <Input
-                      type="file"
-                      accept="audio/*,image/*,video/*,.pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain,"
-                    />
-                    <Button>Encode</Button>
+                    <Formik
+                      initialValues={{ file: "" }}
+                      onSubmit={(values, actions) => {
+                        setTimeout(() => {
+                          alert(JSON.stringify(values, null, 2));
+                          actions.setSubmitting(false);
+                        }, 1000);
+                      }}
+                    >
+                      {(props) => (
+                        <Form>
+                          <Field name="file">
+                            {({ field, form }) => (
+                              <FormControl>
+                                <FormLabel>File</FormLabel>
+                                <Input
+                                  {...field}
+                                  value={undefined} //Hmm fixing the issue where cant set the value programmically
+                                  type="file"
+                                  accept="audio/*,image/*,video/*,.pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain,"
+                                  onChange={(e) => {
+                                    form.setFieldValue(
+                                      field.name,
+                                      e.currentTarget.files[0]
+                                    );
+                                  }}
+                                />
+                                <FormErrorMessage>
+                                  {form.errors.name}
+                                </FormErrorMessage>
+                              </FormControl>
+                            )}
+                          </Field>
+                          <Button
+                            mt={4}
+                            colorScheme="teal"
+                            isLoading={props.isSubmitting}
+                            type="submit"
+                          >
+                            Encode
+                          </Button>
+                        </Form>
+                      )}
+                    </Formik>
                   </Center>
                 </TabPanel>
                 <TabPanel>
