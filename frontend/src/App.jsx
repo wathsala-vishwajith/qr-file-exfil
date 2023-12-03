@@ -22,6 +22,23 @@ import {
 import { Field, Formik, Form } from "Formik";
 
 function App() {
+  const url = "http://localhost:5000/upload";
+
+  const handleSubmit = (values) => {
+    const formData = new FormData();
+    formData.append("file", values.file);
+    axios
+      .post(url, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((resp) => console.log(resp))
+      .catch((err) => alert(err));
+
+    console.log(values.file);
+  };
+
   return (
     <VStack h="full" w="full" minH={"100vh"} p={10} alignItems="center">
       <Center flexDirection={"column"}>
@@ -55,8 +72,8 @@ function App() {
                     <Formik
                       initialValues={{ file: "" }}
                       onSubmit={(values, actions) => {
+                        handleSubmit(values);
                         setTimeout(() => {
-                          alert(JSON.stringify(values, null, 2));
                           actions.setSubmitting(false);
                         }, 1000);
                       }}
