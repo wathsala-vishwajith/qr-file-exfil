@@ -17,6 +17,7 @@ import {
   Button,
   FormControl,
   FormLabel,
+  Image,
   FormErrorMessage,
 } from "@chakra-ui/react";
 import { Field, Formik, Form } from "Formik";
