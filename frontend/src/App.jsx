@@ -1,5 +1,6 @@
 import "./App.css";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
+import { MultiFormatReader } from "@zxing/library";
 import axios from "axios";
 import {
   Card,
@@ -19,25 +20,64 @@ import {
   FormLabel,
   Image,
   FormErrorMessage,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import { Field, Formik, Form } from "Formik";
+import { useState } from "react";
 
 function App() {
   const url = "http://localhost:5000/upload";
 
-  const handleSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("file", values.file);
-    axios
-      .post(url, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((resp) => console.log(resp))
-      .catch((err) => alert(err));
+  const [file, setFile] = useState(null);
+  const [chunks, setChunks] = useState([]);
 
-    console.log(values.file);
+  const handleFileChange = (e) => {
+    const selectedFile = e.file;
+    setFile(selectedFile);
+    console.log(selectedFile);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const fileContent = event.target.result;
+      createChunks(fileContent);
+    };
+
+    reader.readAsBinaryString(selectedFile);
+  };
+
+  const createChunks = (fileContent) => {
+    const chunkSize = 2200; //max is 2400 bytes in version 20 qr
+    const totalChunks = Math.ceil(fileContent.length / chunkSize);
+
+    let chunksArray = [];
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * chunkSize;
+      const end = (i + 1) * chunkSize;
+      const chunk = fileContent.slice(start, end);
+      const base64Chunk = btoa(chunk);
+      const numberedb64Chunk = `${i + 1}/${totalChunks}:`.concat(base64Chunk);
+      chunksArray.push(numberedb64Chunk);
+    }
+
+    setChunks(chunksArray);
+  };
+
+  const createQR = () => {};
+
+  const reverseAndRecreateFile = () => {
+    const reversedChunks = chunks
+      .map((base64Chunk) => base64Chunk.split(":").atob(base64Chunk))
+      .join("");
+    const reversedFileContent = new Blob([reversedChunks], { type: file.type });
+
+    // You can use FileSaver.js or other methods to save the file
+    // For simplicity, here we are creating a download link
+    const downloadLink = document.createElement("a");
+    downloadLink.href = URL.createObjectURL(reversedFileContent);
+    downloadLink.download = "reversed_file.txt";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   };
 
   return (
@@ -73,7 +113,7 @@ function App() {
                     <Formik
                       initialValues={{ file: "" }}
                       onSubmit={(values, actions) => {
-                        handleSubmit(values);
+                        handleFileChange(values);
                         setTimeout(() => {
                           actions.setSubmitting(false);
                         }, 1000);
@@ -106,6 +146,7 @@ function App() {
                           <Button
                             mt={4}
                             colorScheme="teal"
+                            isDisabled={!props.dirty}
                             isLoading={props.isSubmitting}
                             type="submit"
                           >
@@ -123,6 +164,16 @@ function App() {
             </Tabs>
           </CardBody>
         </Card>
+        <Grid templateColumns="repeat(5, 1fr)" gap={6}>
+          {chunks.map((item, idx) => {
+            console.log(item);
+            return (
+              <GridItem id={`qritem-${idx}`} key={idx}>
+                <QRCodeCanvas value={item} version={20} level="H" />
+              </GridItem>
+            );
+          })}
+        </Grid>
       </Center>
     </VStack>
   );
