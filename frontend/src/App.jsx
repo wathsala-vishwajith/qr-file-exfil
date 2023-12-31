@@ -55,7 +55,7 @@ function App() {
       const end = (i + 1) * chunkSize;
       const chunk = fileContent.slice(start, end);
       const base64Chunk = btoa(chunk);
-      const numberedb64Chunk = `${i + 1}/${totalChunks}:`.concat(base64Chunk);
+      const numberedb64Chunk = `${i + 1}/${totalChunks}==`.concat(base64Chunk);
       chunksArray.push(numberedb64Chunk);
     }
 
