@@ -1,7 +1,7 @@
 import "./App.css";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import { MultiFormatReader } from "@zxing/library";
-import Webcam from "react-webcam";
+// import { Webcam } from "react-webcam";
 import axios from "axios";
 
 import {
@@ -35,7 +35,7 @@ function App() {
   const [chunks, setChunks] = useState([]);
 
   //camera
-  const [deviceId, setDeviceId] = useState({});
+  const [deviceId, setDeviceId] = useState(null);
   const [devices, setDevices] = useState([]);
 
   const handleDevices = useCallback(
@@ -52,22 +52,43 @@ function App() {
 
   const handleFileChange = (e) => {
     const selectedFile = e.file;
+
     setFile(selectedFile);
-    console.log(selectedFile);
     const reader = new FileReader();
     reader.onload = (event) => {
+      // console.log(event);
       const fileContent = event.target.result;
-      createChunks(fileContent);
+      createChunks(selectedFile, fileContent);
     };
 
     reader.readAsBinaryString(selectedFile);
   };
 
-  const createChunks = (fileContent) => {
+  const createChunks = (file, fileContent) => {
     const chunkSize = 2000; //max is 2400 bytes in version 20 qr
     const totalChunks = Math.ceil(fileContent.length / chunkSize);
-
+    console.log(file);
     let chunksArray = [];
+
+    //create file infomation first
+    // name
+    // type
+    // number of chunks
+
+    const fileMime = {
+      name: file.name,
+      type: file.type,
+      chunks: totalChunks,
+      size: file.size,
+    };
+    // console.log(JSON.parse(atob(btoa(JSON.stringify(fileMime)))));
+    //first qr with file information
+
+    const fileInfo = `${0}/${totalChunks}==`.concat(
+      btoa(JSON.stringify(fileMime))
+    );
+    chunksArray.push(fileInfo);
+
     for (let i = 0; i < totalChunks; i++) {
       const start = i * chunkSize;
       const end = (i + 1) * chunkSize;
