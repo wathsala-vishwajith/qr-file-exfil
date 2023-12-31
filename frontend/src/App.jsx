@@ -1,7 +1,9 @@
 import "./App.css";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import { MultiFormatReader } from "@zxing/library";
+import Webcam from "react-webcam";
 import axios from "axios";
+
 import {
   Card,
   CardBody,
@@ -24,13 +26,29 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { Field, Formik, Form } from "Formik";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 function App() {
   const url = "http://localhost:5000/upload";
 
   const [file, setFile] = useState(null);
   const [chunks, setChunks] = useState([]);
+
+  //camera
+  const [deviceId, setDeviceId] = useState({});
+  const [devices, setDevices] = useState([]);
+
+  const handleDevices = useCallback(
+    (mediaDevices) =>
+      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
+    [setDevices]
+  );
+
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(handleDevices);
+  }, [handleDevices]);
+
+  console.log(devices);
 
   const handleFileChange = (e) => {
     const selectedFile = e.file;

@@ -13,12 +13,14 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@zxing/library": "^0.20.0",
     "axios": "^1.6.2",
     "formik": "^2.4.5",
     "framer-motion": "^10.16.12",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-webcam": "^7.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",
