@@ -46,7 +46,7 @@ function App() {
   };
 
   const createChunks = (fileContent) => {
-    const chunkSize = 2200; //max is 2400 bytes in version 20 qr
+    const chunkSize = 2000; //max is 2400 bytes in version 20 qr
     const totalChunks = Math.ceil(fileContent.length / chunkSize);
 
     let chunksArray = [];
@@ -62,7 +62,7 @@ function App() {
     setChunks(chunksArray);
   };
 
-  const createQR = () => {};
+  // const createQR = () => {};
 
   const reverseAndRecreateFile = () => {
     const reversedChunks = chunks
