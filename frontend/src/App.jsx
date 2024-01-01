@@ -2,7 +2,7 @@ import "./App.css";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import { MultiFormatReader } from "@zxing/library";
 import Webcam from "react-webcam";
-import axios from "axios";
+// import axios from "axios";
 
 import {
   Card,
@@ -20,7 +20,6 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Image,
   FormErrorMessage,
   Grid,
   GridItem,
@@ -29,17 +28,14 @@ import { Field, Formik, Form } from "Formik";
 import { useState, useEffect, useCallback } from "react";
 
 function App() {
-  const url = "http://localhost:5000/upload";
-
   const [file, setFile] = useState(null);
   const [chunks, setChunks] = useState([]);
 
   //camera
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
-  const [deviceId, setDeviceId] = useState(null);
   const [devices, setDevices] = useState([]);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
-  const [videoStream, setVideoStream] = useState(null);
+  // const [videoStream, setVideoStream] = useState(null);
 
   const handleDevices = useCallback(
     (mediaDevices) => {
@@ -64,7 +60,7 @@ function App() {
   const stopVideo = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     stream.getTracks().forEach((track) => track.stop());
-    setVideoStream(null);
+    // setVideoStream(null);
     setPermissionsGranted(false);
     // if (videoStream) {
     //   const tracks = videoStream.getTracks();
@@ -75,7 +71,6 @@ function App() {
   };
 
   const startVideo = (deviceID) => {
-    console.log("clicked");
     setSelectedDeviceId(deviceID);
     setPermissionsGranted(true);
   };
@@ -89,8 +84,8 @@ function App() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       stream.getTracks().forEach((track) => track.stop());
-      setVideoStream(stream);
-      setPermissionsGranted(true);
+      // setVideoStream(stream);
+      setPermissionsGranted(false);
     } catch (error) {
       console.error("Error accessing camera:", error);
     }
@@ -273,7 +268,9 @@ function App() {
                   ) : (
                     <>
                       <p>
-                        Camera permissions are required to use this feature.
+                        Camera permissions are required to use this feature.{" "}
+                        <br></br>
+                        Try Pressing Start on available devices.
                       </p>
                       {devices.map((device, key) => (
                         <Button
