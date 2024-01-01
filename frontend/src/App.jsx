@@ -175,6 +175,13 @@ function App() {
             includeMargin={false}
           />
           <Heading color={"lightskyblue"}>qr-file-exfil</Heading>
+          <Heading as="h3" size="md">
+            Logless file extraction for auditable devices.{" "}
+          </Heading>
+          <Heading as="h3" size="sm">
+            First Create the QRs, then use the decoder to recreate the file on
+            an another device.{" "}
+          </Heading>
         </Center>
         <Card>
           <CardBody>
