@@ -24,7 +24,7 @@ import {
   Grid,
   GridItem,
 } from "@chakra-ui/react";
-import { Field, Formik, Form } from "Formik";
+import { Field, Formik, Form } from "formik";
 import { useState, useEffect, useCallback } from "react";
 
 function App() {
