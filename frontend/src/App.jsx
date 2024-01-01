@@ -1,6 +1,6 @@
 import "./App.css";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
-import { MultiFormatReader } from "@zxing/library";
+import { BrowserMultiFormatReader } from "@zxing/library";
 import Webcam from "react-webcam";
 // import axios from "axios";
 
@@ -25,13 +25,19 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { Field, Formik, Form } from "formik";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 function App() {
   const [file, setFile] = useState(null);
   const [chunks, setChunks] = useState([]);
 
+  //barcode reader
+  const webCamRef = useRef(null);
+  const [codeReader, setCodeReader] = useState(null);
+  const [scanning, setScanning] = useState(false);
+
   //camera
+
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
   const [devices, setDevices] = useState([]);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
@@ -52,6 +58,7 @@ function App() {
         setSelectedDeviceId(
           videoDevices.length > 0 ? videoDevices[0].deviceId : null
         );
+        setScanning(false);
       }
     },
     [selectedDeviceId]
@@ -61,6 +68,7 @@ function App() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     stream.getTracks().forEach((track) => track.stop());
     // setVideoStream(null);
+    setScanning(false);
     setPermissionsGranted(false);
     // if (videoStream) {
     //   const tracks = videoStream.getTracks();
@@ -71,6 +79,7 @@ function App() {
   };
 
   const startVideo = (deviceID) => {
+    setScanning(true);
     setSelectedDeviceId(deviceID);
     setPermissionsGranted(true);
   };
@@ -90,6 +99,38 @@ function App() {
       console.error("Error accessing camera:", error);
     }
   };
+  //QR read
+
+  useEffect(() => {
+    if (selectedDeviceId && scanning) {
+      const reader = new BrowserMultiFormatReader();
+      setCodeReader(reader);
+    }
+  }, [selectedDeviceId, scanning]);
+
+  // Start/stop continuous scanning when codeReader changes
+  useEffect(() => {
+    if (codeReader && selectedDeviceId) {
+      if (scanning) {
+        const decodeCallback = (result, error) => {
+          if (result) {
+            console.log(result.text);
+            // Handle the decoded QR code data as needed
+          } else if (error) {
+            console.error(error);
+          }
+        };
+        console.log(selectedDeviceId);
+        codeReader.decodeFromInputVideoDevice(
+          selectedDeviceId,
+          "video",
+          decodeCallback
+        );
+      } else {
+        codeReader.stopContinuousDecode();
+      }
+    }
+  }, [codeReader, selectedDeviceId, scanning]);
 
   //files
 
@@ -253,6 +294,8 @@ function App() {
                         <div key={selectedDeviceId}>
                           <Webcam
                             audio={false}
+                            ref={webCamRef}
+                            screenshotFormat="image/png"
                             videoConstraints={{ deviceId: selectedDeviceId }}
                             key={selectedDeviceId}
                           />
