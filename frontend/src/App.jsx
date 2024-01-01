@@ -1,7 +1,7 @@
 import "./App.css";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import { MultiFormatReader } from "@zxing/library";
-// import { Webcam } from "react-webcam";
+import Webcam from "react-webcam";
 import axios from "axios";
 
 import {
@@ -35,20 +35,68 @@ function App() {
   const [chunks, setChunks] = useState([]);
 
   //camera
+  const [selectedDeviceId, setSelectedDeviceId] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [devices, setDevices] = useState([]);
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [videoStream, setVideoStream] = useState(null);
 
   const handleDevices = useCallback(
-    (mediaDevices) =>
-      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
-    [setDevices]
+    (mediaDevices) => {
+      const videoDevices = mediaDevices.filter(
+        ({ kind }) => kind === "videoinput"
+      );
+      setDevices(videoDevices);
+
+      // If no device is selected or the selected device is not available, choose the first available device
+      if (
+        !selectedDeviceId ||
+        !videoDevices.some((device) => device.deviceId === selectedDeviceId)
+      ) {
+        setSelectedDeviceId(
+          videoDevices.length > 0 ? videoDevices[0].deviceId : null
+        );
+      }
+    },
+    [selectedDeviceId]
   );
+
+  const stopVideo = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    stream.getTracks().forEach((track) => track.stop());
+    setVideoStream(null);
+    setPermissionsGranted(false);
+    // if (videoStream) {
+    //   const tracks = videoStream.getTracks();
+    //   tracks.forEach((track) => track.stop());
+    //   setVideoStream(null);
+    //   setPermissionsGranted(false);
+    // }
+  };
+
+  const startVideo = (deviceID) => {
+    console.log("clicked");
+    setSelectedDeviceId(deviceID);
+    setPermissionsGranted(true);
+  };
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
+    handlePermission();
   }, [handleDevices]);
 
-  console.log(devices);
+  const handlePermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setVideoStream(stream);
+      setPermissionsGranted(true);
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+    }
+  };
+
+  //files
 
   const handleFileChange = (e) => {
     const selectedFile = e.file;
@@ -197,7 +245,47 @@ function App() {
                   </Center>
                 </TabPanel>
                 <TabPanel>
-                  <p>Decode</p>
+                  {permissionsGranted ? (
+                    <>
+                      {selectedDeviceId && (
+                        <div key={selectedDeviceId}>
+                          <Webcam
+                            audio={false}
+                            videoConstraints={{ deviceId: selectedDeviceId }}
+                            key={selectedDeviceId}
+                          />
+                          {devices.map((device, key) => (
+                            <Button
+                              key={key}
+                              onClick={() =>
+                                setSelectedDeviceId(device.deviceId)
+                              }
+                              disabled={device.deviceId === selectedDeviceId}
+                            >
+                              Select Camera{" "}
+                              {device.label || `Device ${key + 1}`}
+                            </Button>
+                          ))}
+                          <Button onClick={stopVideo}>Stop</Button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        Camera permissions are required to use this feature.
+                      </p>
+                      {devices.map((device, key) => (
+                        <Button
+                          key={key}
+                          onClick={() => startVideo(device.deviceId)}
+                          // setSelectedDeviceId(device.deviceId)}
+                        >
+                          Select Camera {device.label || `Device ${key + 1}`}
+                        </Button>
+                      ))}
+                    </>
+                  )}
                 </TabPanel>
               </TabPanels>
             </Tabs>
